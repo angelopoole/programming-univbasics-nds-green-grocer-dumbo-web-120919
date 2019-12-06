@@ -37,12 +37,37 @@ def apply_coupons(cart, coupons)
   # Consult README for inputs and outputs
   #
   # REMEMBER: This method **should** update cart
+  i = 0
+  while i < coupons.count do
+    coupon = coupons[i]
+    item_with_coupon = find_item_by_name_in_collection(coupon[:item], cart)
+    item_is_in_basket = !!item_with_coupon
+    count_is_big_enough_to_apply = item_is_in_basket && item_with_coupon[:count] >= coupon[:num]
+
+    if item_is_in_basket and count_is_big_enough_to_apply
+      apply_coupon_to_cart(item_with_coupon, coupon, cart)
+    end
+    i += 1
+  end
+
+  cart
 end
 
 def apply_clearance(cart)
   # Consult README for inputs and outputs
   #
   # REMEMBER: This method **should** update cart
+  i = 0
+while i < cart.length do
+  item = cart[i]
+  if item[:clearance]
+    discounted_price = ((1 - CLEARANCE_ITEM_DISCOUNT_RATE) * item[:price]).round(2)
+      item[:price] = discounted_price
+  end
+  i += 1
+end
+
+cart
 end
 
 def checkout(cart, coupons)
@@ -55,4 +80,17 @@ def checkout(cart, coupons)
   #
   # BEFORE it begins the work of calculating the total (or else you might have
   # some irritated customers
+  total = 0
+i = 0
+
+ccart = consolidate_cart(cart)
+apply_coupons(ccart, coupons)
+apply_clearance(ccart)
+
+while i < ccart.length do
+  total += items_total_cost(ccart[i])
+  i += 1
+end
+
+total >= 100 ? total * (1.0 - BIG_PURCHASE_DISCOUNT_RATE) : total
 end
